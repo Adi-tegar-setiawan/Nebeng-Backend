@@ -5,9 +5,521 @@
 
 generator client {
   provider = "prisma-client"
-  output   = "../generated/prisma"
+  output   = "../src/generated/prisma"
+  moduleFormat = "cjs"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
+}
+
+// ------------------------------------------------------
+// ENUMS
+// ------------------------------------------------------
+
+enum Role {
+  superadmin
+  admin_wilayah
+  operator_pos
+  mitra
+  customer
+}
+
+enum UserStatus {
+  active
+  suspended
+  blocked
+}
+
+enum VerificationStatus {
+  unverified
+  pending
+  approved
+  rejected
+}
+
+enum VerificationType {
+  ktp
+  sim
+  skck
+  stnk
+}
+
+enum ServiceType {
+  motor
+  mobil
+  barang
+}
+
+enum VehicleType {
+  motor
+  mobil
+}
+
+enum TripStatus {
+  scheduled
+  in_origin_pos
+  in_transit
+  arrived_dest_pos
+  completed
+  cancelled
+}
+
+enum OrderType {
+  passenger
+  parcel
+}
+
+enum OrderStatus {
+  pending_payment
+  paid
+  checked_in_origin
+  in_transit
+  arrived_destination
+  completed
+  cancelled
+}
+
+enum EscrowStatus {
+  pending
+  held
+  released
+  refunded
+}
+
+enum ParcelSize {
+  xxs
+  xs
+  s
+  m
+  l
+  xl
+}
+
+enum ScanType {
+  checkin_origin
+  checkin_destination
+}
+
+enum PaymentStatus {
+  pending
+  success
+  failed
+  refunded
+}
+
+enum TransactionType {
+  credit
+  debit
+  escrow_hold
+  escrow_release
+}
+
+enum RewardType {
+  earn
+  redeem
+}
+
+// ------------------------------------------------------
+// 1. REGION & CITY MANAGEMENT
+// ------------------------------------------------------
+
+model Region {
+  id        BigInt   @id @default(autoincrement())
+  name      String   // Contoh: Region Yogyakarta, Region Banyumas
+  code      String   @unique // Contoh: REG-DIY, REG-BMS
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  users        User[]
+  pickupPoints PickupPoint[]
+
+  @@map("regions")
+}
+
+model City {
+  id        BigInt   @id @default(autoincrement())
+  name      String
+  province  String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  pickupPoints PickupPoint[]
+
+  @@map("cities")
+}
+
+// ------------------------------------------------------
+// 2. USER & VERIFICATION CENTER
+// ------------------------------------------------------
+
+model User {
+  id                 BigInt             @id @default(autoincrement())
+  regionId           BigInt?            @map("region_id")
+  region             Region?            @relation(fields: [regionId], references: [id])
+  name               String
+  email              String             @unique
+  phone              String             @unique
+  password           String
+  role               Role
+  status             UserStatus         @default(active)
+  statusVerification VerificationStatus @default(unverified) @map("status_verification")
+  pinHash            String?            @map("pin_hash")
+  avatar             String?
+  rewardPoints       Int                @default(0) @map("reward_points")
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+
+  profile              UserProfile?
+  wallet               Wallet?
+  assignedPickupPoints PickupPoint[]        @relation("OperatorAssigned")
+  verifications        Verification[]       @relation("UserVerifications")
+  approvedVerifications Verification[]      @relation("AdminApprovals")
+  tripsAsMitra         Trip[]               @relation("MitraTrips")
+  ordersAsCustomer     Order[]              @relation("CustomerOrders")
+  checkpointsScanned   CheckpointsLog[]     @relation("OperatorCheckpoints")
+  rewardTransactions   RewardTransaction[]
+  conversationsAsCustomer Conversation[]   @relation("CustomerConversations")
+  conversationsAsMitra    Conversation[]   @relation("MitraConversations")
+  sentMessages         Message[]            @relation("SentMessages")
+  reviewsGiven         TripReview[]         @relation("ReviewsGiven")
+  reviewsReceived      TripReview[]         @relation("ReviewsReceived")
+
+  @@map("users")
+}
+
+model UserProfile {
+  id                BigInt   @id @default(autoincrement())
+  userId            BigInt   @unique @map("user_id")
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ktpNumber         String?  @map("ktp_number")
+  fullNameKtp       String?  @map("full_name_ktp")
+  addressKtp        String?  @db.Text @map("address_ktp")
+  faceImageUrl      String?  @map("face_image_url")
+  isFaceVerified    Boolean  @default(false) @map("is_face_verified")
+  bankName          String?  @map("bank_name")
+  bankAccountNumber String?  @map("bank_account_number")
+  bankAccountHolder String?  @map("bank_account_holder")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@map("user_profiles")
+}
+
+model Verification {
+  id               BigInt             @id @default(autoincrement())
+  userId           BigInt             @map("user_id")
+  user             User               @relation("UserVerifications", fields: [userId], references: [id])
+  approvedByUserId BigInt?            @map("approved_by_user_id")
+  approvedByUser   User?              @relation("AdminApprovals", fields: [approvedByUserId], references: [id])
+  type             VerificationType
+  status           VerificationStatus @default(pending)
+  rejectionReason  String?            @db.Text @map("rejection_reason")
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
+
+  files VerificationFile[]
+
+  @@map("verifications")
+}
+
+model VerificationFile {
+  id             BigInt       @id @default(autoincrement())
+  verificationId BigInt       @map("verification_id")
+  verification   Verification @relation(fields: [verificationId], references: [id], onDelete: Cascade)
+  filePath       String       @map("file_path")
+  fileType       String       @map("file_type")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  @@map("verification_files")
+}
+
+// ------------------------------------------------------
+// 3. PICKUP POINTS & PRICING
+// ------------------------------------------------------
+
+model PickupPoint {
+  id          BigInt   @id @default(autoincrement())
+  regionId    BigInt   @map("region_id")
+  region      Region   @relation(fields: [regionId], references: [id])
+  cityId      BigInt   @map("city_id")
+  city        City     @relation(fields: [cityId], references: [id])
+  operatorId  BigInt?  @map("operator_id")
+  operator    User?    @relation("OperatorAssigned", fields: [operatorId], references: [id])
+  name        String
+  address     String   @db.Text
+  latitude    Decimal  @db.Decimal(10, 8)
+  longitude   Decimal  @db.Decimal(11, 8)
+  qrCodePos   String   @unique @map("qr_code_pos")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  originTrips      Trip[]           @relation("OriginPickupPoint")
+  destTrips        Trip[]           @relation("DestPickupPoint")
+  checkpointsLogs  CheckpointsLog[]
+
+  @@map("pickup_points")
+}
+
+model PricingSetting {
+  id                 BigInt      @id @default(autoincrement())
+  serviceType        ServiceType @map("service_type")
+  baseFare           Decimal     @map("base_fare") @db.Decimal(10, 2)
+  farePerKm          Decimal     @map("fare_per_km") @db.Decimal(10, 2)
+  farePerKg          Decimal?    @map("fare_per_kg") @db.Decimal(10, 2)
+  adminFeePercentage Decimal     @map("admin_fee_percentage") @db.Decimal(5, 2)
+  createdAt          DateTime    @default(now()) @map("created_at")
+  updatedAt          DateTime    @updatedAt @map("updated_at")
+
+  @@map("pricing_settings")
+}
+
+// ------------------------------------------------------
+// 4. TRIPS & ORDERS
+// ------------------------------------------------------
+
+model Trip {
+  id                        BigInt      @id @default(autoincrement())
+  mitraId                   BigInt      @map("mitra_id")
+  mitra                     User        @relation("MitraTrips", fields: [mitraId], references: [id])
+  originPointId             BigInt      @map("origin_point_id")
+  originPoint               PickupPoint @relation("OriginPickupPoint", fields: [originPointId], references: [id])
+  destinationPointId        BigInt      @map("destination_point_id")
+  destinationPoint          PickupPoint @relation("DestPickupPoint", fields: [destinationPointId], references: [id])
+  vehicleType               VehicleType @map("vehicle_type")
+  departureDate             DateTime    @db.Date @map("departure_date")
+  departureTime             DateTime    @db.Time @map("departure_time")
+  price                     Decimal     @db.Decimal(10, 2)
+  seatTotal                 Int         @map("seat_total")
+  seatAvailable             Int         @map("seat_available")
+  maxWeightCapacityKg       Decimal     @map("max_weight_capacity_kg") @db.Decimal(8, 2)
+  remainingWeightCapacityKg Decimal     @map("remaining_weight_capacity_kg") @db.Decimal(8, 2)
+  qrCodeTrip                String      @unique @map("qr_code_trip")
+  status                    TripStatus  @default(scheduled)
+  mapsPolyline              String?     @db.Text @map("maps_polyline")
+  createdAt                 DateTime    @default(now()) @map("created_at")
+  updatedAt                 DateTime    @updatedAt @map("updated_at")
+
+  orders           Order[]
+  checkpointsLogs  CheckpointsLog[]
+  qrSessions       TripQrSession[]
+  trackings        TripTracking[]
+  conversations    Conversation[]
+  reviews          TripReview[]
+
+  @@map("trips")
+}
+
+model Order {
+  id               BigInt       @id @default(autoincrement())
+  tripId           BigInt       @map("trip_id")
+  trip             Trip         @relation(fields: [tripId], references: [id])
+  customerId       BigInt       @map("customer_id")
+  customer         User         @relation("CustomerOrders", fields: [customerId], references: [id])
+  type             OrderType
+  seatsBooked      Int          @default(0) @map("seats_booked")
+  totalItemsCount  Int          @default(0) @map("total_items_count")
+  totalWeightKg    Decimal      @default(0) @map("total_weight_kg") @db.Decimal(8, 2)
+  totalPrice       Decimal      @map("total_price") @db.Decimal(10, 2)
+  qrCodeTicket     String       @unique @map("qr_code_ticket")
+  otpClaim         String?      @map("otp_claim")
+  readinessStatus  String?      @map("readiness_status")
+  status           OrderStatus  @default(pending_payment)
+  escrowStatus     EscrowStatus @default(pending) @map("escrow_status")
+  createdAt        DateTime     @default(now()) @map("created_at")
+  updatedAt        DateTime     @updatedAt @map("updated_at")
+
+  itemOrders         ItemOrder[]
+  checkpointsLogs    CheckpointsLog[]
+  qrSessions         OrderQrSession[]
+  payments           Payment[]
+  walletTransactions WalletTransaction[]
+
+  @@map("orders")
+}
+
+model ItemOrder {
+  id                BigInt     @id @default(autoincrement())
+  orderId           BigInt     @map("order_id")
+  order             Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  itemName          String     @map("item_name")
+  itemCategory      String     @map("item_category")
+  quantity          Int        @default(1)
+  weightPerItemKg   Decimal    @map("weight_per_item_kg") @db.Decimal(8, 2)
+  totalItemWeightKg Decimal    @map("total_item_weight_kg") @db.Decimal(8, 2)
+  sizeEnum          ParcelSize @map("size_enum")
+  photoUrl          String?    @map("photo_url")
+  securitySealQr    String?    @unique @map("security_seal_qr")
+  recipientName     String     @map("recipient_name")
+  recipientPhone    String     @map("recipient_phone")
+  createdAt         DateTime   @default(now()) @map("created_at")
+  updatedAt         DateTime   @updatedAt @map("updated_at")
+
+  @@map("item_orders")
+}
+
+// ------------------------------------------------------
+// 5. CHECKPOINTS, QR SESSIONS & TRACKING
+// ------------------------------------------------------
+
+model CheckpointsLog {
+  id             BigInt      @id @default(autoincrement())
+  tripId         BigInt      @map("trip_id")
+  trip           Trip        @relation(fields: [tripId], references: [id])
+  orderId        BigInt      @map("order_id")
+  order          Order       @relation(fields: [orderId], references: [id])
+  posId          BigInt      @map("pos_id")
+  pos            PickupPoint @relation(fields: [posId], references: [id])
+  scannedByUserId BigInt     @map("scanned_by_user_id")
+  scannedByUser  User        @relation("OperatorCheckpoints", fields: [scannedByUserId], references: [id])
+  scanType       ScanType    @map("scan_type")
+  createdAt      DateTime    @default(now()) @map("created_at")
+
+  @@map("checkpoints_log")
+}
+
+model TripQrSession {
+  id        BigInt   @id @default(autoincrement())
+  tripId    BigInt   @map("trip_id")
+  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  qrToken   String   @map("qr_token")
+  purpose   String?
+  isUsed    Boolean  @default(false) @map("is_used")
+  expiredAt DateTime @map("expired_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("trip_qr_sessions")
+}
+
+model OrderQrSession {
+  id        BigInt   @id @default(autoincrement())
+  orderId   BigInt   @map("order_id")
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  qrToken   String   @map("qr_token")
+  isUsed    Boolean  @default(false) @map("is_used")
+  expiredAt DateTime @map("expired_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("order_qr_sessions")
+}
+
+model TripTracking {
+  id         BigInt   @id @default(autoincrement())
+  tripId     BigInt   @map("trip_id")
+  trip       Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  latitude   Decimal  @db.Decimal(10, 8)
+  longitude  Decimal  @db.Decimal(11, 8)
+  recordedAt DateTime @default(now()) @map("recorded_at")
+
+  @@map("trip_trackings")
+}
+
+// ------------------------------------------------------
+// 6. PAYMENTS & WALLETS (ESCROW & REWARDS)
+// ------------------------------------------------------
+
+model Payment {
+  id             BigInt        @id @default(autoincrement())
+  orderId        BigInt        @map("order_id")
+  order          Order         @relation(fields: [orderId], references: [id])
+  paymentGateway String        @map("payment_gateway")
+  transactionId  String        @map("transaction_id")
+  amount         Decimal       @db.Decimal(10, 2)
+  status         PaymentStatus
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  @@map("payments")
+}
+
+model Wallet {
+  id                BigInt   @id @default(autoincrement())
+  userId            BigInt   @unique @map("user_id")
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  balance           Decimal  @default(0.00) @db.Decimal(10, 2)
+  heldEscrowBalance Decimal  @default(0.00) @map("held_escrow_balance") @db.Decimal(10, 2)
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  transactions WalletTransaction[]
+
+  @@map("wallets")
+}
+
+model WalletTransaction {
+  id          BigInt          @id @default(autoincrement())
+  walletId    BigInt          @map("wallet_id")
+  wallet      Wallet          @relation(fields: [walletId], references: [id])
+  orderId     BigInt?         @map("order_id")
+  order       Order?          @relation(fields: [orderId], references: [id])
+  amount      Decimal         @db.Decimal(10, 2)
+  type        TransactionType
+  description String?         @db.Text
+  createdAt   DateTime        @default(now()) @map("created_at")
+
+  @@map("wallet_transactions")
+}
+
+model RewardTransaction {
+  id          BigInt     @id @default(autoincrement())
+  userId      BigInt     @map("user_id")
+  user        User       @relation(fields: [userId], references: [id])
+  points      Int
+  type        RewardType
+  description String?    @db.Text
+  createdAt   DateTime   @default(now()) @map("created_at")
+
+  @@map("reward_transactions")
+}
+
+// ------------------------------------------------------
+// 7. IN-APP MESSAGING & REVIEWS
+// ------------------------------------------------------
+
+model Conversation {
+  id         BigInt   @id @default(autoincrement())
+  tripId     BigInt   @map("trip_id")
+  trip       Trip     @relation(fields: [tripId], references: [id])
+  customerId BigInt   @map("customer_id")
+  customer   User     @relation("CustomerConversations", fields: [customerId], references: [id])
+  mitraId    BigInt   @map("mitra_id")
+  mitra      User     @relation("MitraConversations", fields: [mitraId], references: [id])
+  isLocked   Boolean  @default(false) @map("is_locked")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  messages Message[]
+
+  @@map("conversations")
+}
+
+model Message {
+  id             BigInt       @id @default(autoincrement())
+  conversationId BigInt       @map("conversation_id")
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       BigInt       @map("sender_id")
+  sender         User         @relation("SentMessages", fields: [senderId], references: [id])
+  messageText    String       @db.Text @map("message_text")
+  readAt         DateTime?    @map("read_at")
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  @@map("messages")
+}
+
+model TripReview {
+  id         BigInt   @id @default(autoincrement())
+  tripId     BigInt   @map("trip_id")
+  trip       Trip     @relation(fields: [tripId], references: [id])
+  reviewerId BigInt   @map("reviewer_id")
+  reviewer   User     @relation("ReviewsGiven", fields: [reviewerId], references: [id])
+  revieweeId BigInt   @map("reviewee_id")
+  reviewee   User     @relation("ReviewsReceived", fields: [revieweeId], references: [id])
+  rating     Int
+  comment    String?  @db.Text
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("trip_reviews")
 }
