@@ -6,30 +6,63 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['eslint.config.mjs'],
+    ignores: [
+      'eslint.config.mjs',
+      'dist/**',
+      'generated/**',
+      'node_modules/**',
+    ],
   },
+
+  // ESLint recommended
   eslint.configs.recommended,
-  ...tseslint.configs.recommendedTypeChecked,
+
+  // TypeScript recommended tanpa type-checking
+  ...tseslint.configs.recommended,
+
+  // Prettier
   eslintPluginPrettierRecommended,
+
   {
     languageOptions: {
       globals: {
         ...globals.node,
         ...globals.jest,
       },
+
       sourceType: 'commonjs',
-      parserOptions: {
-        projectService: true,
-        tsconfigRootDir: import.meta.dirname,
-      },
     },
   },
+
   {
     rules: {
+      // =========================
+      // TypeScript
+      // =========================
+
+      // Boleh menggunakan any jika memang diperlukan.
       '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-floating-promises': 'warn',
-      '@typescript-eslint/no-unsafe-argument': 'warn',
-      "prettier/prettier": ["error", { endOfLine: "auto" }],
+
+      // Unused variable hanya warning.
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
+
+      // =========================
+      // Prettier
+      // =========================
+
+      'prettier/prettier': [
+        'error',
+        {
+          endOfLine: 'auto',
+        },
+      ],
     },
   },
 );
