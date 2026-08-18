@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { VerificationStatus } from '../../generated/prisma/enums';
+import { VerificationStatus } from '../../../generated/prisma/enums';
 import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class ReviewVerificationDto {

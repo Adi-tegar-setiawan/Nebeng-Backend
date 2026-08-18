@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { VerificationType } from '../../generated/prisma/enums';
+import { VerificationType } from '../../../generated/prisma/enums';
 import { Type } from 'class-transformer';
 import {
   IsArray,

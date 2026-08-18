@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
+import { PrismaService } from '../../../prisma/prisma.service';
 import {
   VerificationStatus,
   VerificationType,
-} from '../../generated/prisma/enums';
+} from '../../../generated/prisma/enums';
 
 @Injectable()
 export class VerificationRepository {

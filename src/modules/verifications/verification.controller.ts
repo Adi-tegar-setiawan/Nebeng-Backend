@@ -17,11 +17,11 @@ import {
 import { VerificationService } from './verification.service';
 import { SumbitVerificationDto } from './dto/submit-verification.dto';
 import { ReviewVerificationDto } from './dto/review-verification.dto';
-import { JwtAuthGuard } from '../modules/auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../common/guards/roles.guard';
-import { Roles } from '../common/decorators/roles.decorator';
-import { Role, VerificationStatus } from '../generated/prisma/enums';
-import { GetUser } from '../common/decorators/get-user.decorators';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { Role, VerificationStatus } from '../../generated/prisma/enums';
+import { GetUser } from '../../common/decorators/get-user.decorators';
 
 @ApiTags('Verifications')
 @Controller('verifications')

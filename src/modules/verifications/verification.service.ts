@@ -7,7 +7,7 @@ import { VerificationRepository } from './repositories/verification.repository';
 import { SumbitVerificationDto } from './dto/submit-verification.dto';
 import { ReviewVerificationDto } from './dto/review-verification.dto';
 import { VerificationMapper } from './mappers/verification.mapper';
-import { VerificationStatus } from '../generated/prisma/enums';
+import { VerificationStatus } from '../../generated/prisma/enums';
 
 @Injectable()
 export class VerificationService {
