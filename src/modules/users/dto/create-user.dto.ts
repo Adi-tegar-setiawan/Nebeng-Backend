@@ -4,9 +4,11 @@ import {
   IsEnum,
   IsNotEmpty,
   IsOptional,
+  Matches,
   IsString,
   MinLength,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { Role, UserStatus } from '../../../generated/prisma/client';
 
 export class CreateUserDto {
@@ -15,15 +17,18 @@ export class CreateUserDto {
   @IsNotEmpty()
   name!: string;
 
-  @ApiProperty({ example: 'jhons@gmail.com ' })
+  @ApiProperty({ example: 'jhons@gmail.com' })
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsEmail()
   @IsString()
   @IsNotEmpty()
   email!: string;
 
   @ApiProperty({ example: '0812345678913' })
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   @IsNotEmpty()
+  @Matches(/^[0-9]{9,15}$/, { message: 'Nomor hanya boleh berisi angka' })
   phone!: string;
 
   @ApiProperty({ example: 'password' })
