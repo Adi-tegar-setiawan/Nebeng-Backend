@@ -4,6 +4,7 @@ import {
   Post,
   Body,
   Patch,
+  Request,
   Param,
   Delete,
   HttpCode,
@@ -25,6 +26,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../generated/prisma/enums';
+import { SetPinDto } from './dto/set-pin.dto';
+import { VerifyPinDto } from './dto/verify-pin.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -90,6 +93,22 @@ export class UserController {
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<UserResponseDto> {
     return this.userService.update(id, updateUserDto);
+  }
+
+  @Post('me/pin')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Membuat atau memperbarui PIN keamanan (6 digit)' })
+  setPin(@Request() req: any, @Body() setPinDto: SetPinDto) {
+    return this.userService.setPin(req.user.id, setPinDto.pin);
+  }
+
+  @Post('me/pin/verify')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Memverifikasi PIN keamanan untuk transaksi' })
+  verifyPin(@Request() req: any, @Body() verifyPinDto: VerifyPinDto) {
+    return this.userService.verifyPin(req.user.id, verifyPinDto.pin);
   }
 
   @Patch(':id/status')

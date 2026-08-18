@@ -19,6 +19,7 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { UserResponseDto } from '../users/dto/user-response.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -52,5 +53,28 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Data pengguna ditemukan' })
   getProfile(@Request() req: any) {
     return req.user;
+  }
+
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Memperbarui Access Token menggunakan Refresh Token',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Access Token baru berhasil diterbitkan',
+  })
+  refresh(@Body() refreshTokenDto: RefreshTokenDto) {
+    return this.authService.refreshToken(refreshTokenDto);
+  }
+
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Keluar dari aplikasi (Menghapus Refresh Token)' })
+  @ApiResponse({ status: 200, description: 'Logout berhasil' })
+  logout(@Request() req: any) {
+    return this.authService.logout(req.user.id);
   }
 }

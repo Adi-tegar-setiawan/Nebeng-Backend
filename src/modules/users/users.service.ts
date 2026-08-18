@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -97,6 +98,26 @@ export class UsersService {
     });
 
     return UserMapper.toResponse(updateUser);
+  }
+
+  async setPin(userId: string, pin: string): Promise<{ message: string }> {
+    const hashedPin = await bcrypt.hash(pin, 10);
+    await this.userRepository.updatePin(userId, hashedPin);
+    return { message: 'PIN keamanan berhasil diperbarui' };
+  }
+
+  async verifyPin(userId: string, pin: string): Promise<{ valid: boolean }> {
+    const user = await this.userRepository.findById(userId);
+    if (!user || !user.pinHash) {
+      throw new NotFoundException('PIN belum diatur untuk akun ini');
+    }
+
+    const isValid = await bcrypt.compare(pin, user.pinHash);
+    if (!isValid) {
+      throw new BadRequestException('PIN yang dimasukkan salah');
+    }
+
+    return { valid: true };
   }
 
   async updateStatus(

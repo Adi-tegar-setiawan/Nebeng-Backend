@@ -45,6 +45,23 @@ export class UserRepository {
     });
   }
 
+  async updateRefreshToken(
+    id: string,
+    refreshToken: string | null,
+  ): Promise<User> {
+    return this.prisma.user.update({
+      where: { id: BigInt(id) },
+      data: { refreshToken },
+    });
+  }
+
+  async updatePin(id: string, pinHash: string): Promise<User> {
+    return this.prisma.user.update({
+      where: { id: BigInt(id) },
+      data: { pinHash },
+    });
+  }
+
   async delete(id: string): Promise<User> {
     return this.prisma.user.delete({
       where: { id: BigInt(id) },

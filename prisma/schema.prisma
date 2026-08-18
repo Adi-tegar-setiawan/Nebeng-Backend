@@ -166,6 +166,7 @@ model User {
   status             UserStatus         @default(active)
   statusVerification VerificationStatus @default(unverified) @map("status_verification")
   pinHash            String?            @map("pin_hash")
+  refreshToken       String?            @map("refresh_token") @db.Text
   avatar             String?
   rewardPoints       Int                @default(0) @map("reward_points")
   createdAt          DateTime           @default(now()) @map("created_at")
