@@ -8,20 +8,33 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { Role } from '../../generated/prisma/enums';
 
 @ApiTags('Users')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UsersService) {}
 
   @Post()
+  @Roles(Role.superadmin, Role.admin_wilayah)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Membuat pengguna baru' })
   @ApiResponse({
@@ -29,16 +42,17 @@ export class UserController {
     description: 'Pengguna berhasil dibuat',
     type: UserResponseDto,
   })
-  @ApiResponse({ status: 400, description: 'payload tidak valid' })
+  @ApiResponse({ status: 400, description: 'Payload tidak valid' })
   @ApiResponse({
     status: 409,
     description: 'Email atau Nomor HP sudah terdaftar',
   })
-  create(@Body() CreateUserDto: CreateUserDto): Promise<UserResponseDto> {
-    return this.userService.create(CreateUserDto);
+  create(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
+    return this.userService.create(createUserDto);
   }
 
   @Get()
+  @Roles(Role.superadmin, Role.admin_wilayah, Role.operator_pos)
   @ApiOperation({ summary: 'Mendapatkan semua daftar pengguna' })
   @ApiResponse({
     status: 200,
@@ -50,6 +64,7 @@ export class UserController {
   }
 
   @Get(':id')
+  @Roles(Role.superadmin, Role.admin_wilayah, Role.operator_pos)
   @ApiOperation({ summary: 'Mendapatkan detail pengguna berdasarkan ID' })
   @ApiResponse({
     status: 200,
@@ -62,6 +77,7 @@ export class UserController {
   }
 
   @Patch(':id')
+  @Roles(Role.superadmin, Role.admin_wilayah)
   @ApiOperation({ summary: 'Memperbarui data pengguna berdasarkan ID' })
   @ApiResponse({
     status: 200,
@@ -77,6 +93,7 @@ export class UserController {
   }
 
   @Patch(':id/status')
+  @Roles(Role.superadmin, Role.admin_wilayah)
   @ApiOperation({ summary: 'Mengubah status user (Active/Suspended/Blocked)' })
   @ApiResponse({ status: 200, type: UserResponseDto })
   updateStatus(
@@ -87,6 +104,7 @@ export class UserController {
   }
 
   @Delete(':id')
+  @Roles(Role.superadmin)
   @ApiOperation({ summary: 'Menghapus pengguna berdasarkan ID' })
   @ApiResponse({
     status: 200,
