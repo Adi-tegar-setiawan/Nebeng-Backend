@@ -15,6 +15,7 @@ import { TripsModule } from './modules/trips/trips.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { WalletsModule } from './modules/wallets/wallets.module';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { CheckpointsModule } from './modules/checkpoints/checkpoints.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
     OrdersModule,
     WalletsModule,
     PaymentsModule,
+    CheckpointsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
