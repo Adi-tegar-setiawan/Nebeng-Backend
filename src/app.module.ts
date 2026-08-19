@@ -12,6 +12,7 @@ import { RegionsModule } from './modules/regions/region.module';
 import { PickupPointsModule } from './modules/pickup-points/pickup-points.module';
 import { VehiclesModule } from './modules/vehicles/vehicles.module';
 import { TripsModule } from './modules/trips/trips.module';
+import { OrdersModule } from './modules/orders/orders.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { TripsModule } from './modules/trips/trips.module';
     PickupPointsModule,
     VehiclesModule,
     TripsModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
