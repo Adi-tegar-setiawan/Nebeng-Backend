@@ -13,6 +13,8 @@ import { PickupPointsModule } from './modules/pickup-points/pickup-points.module
 import { VehiclesModule } from './modules/vehicles/vehicles.module';
 import { TripsModule } from './modules/trips/trips.module';
 import { OrdersModule } from './modules/orders/orders.module';
+import { WalletsModule } from './modules/wallets/wallets.module';
+import { PaymentsModule } from './modules/payments/payments.module';
 
 @Module({
   imports: [
@@ -28,6 +30,8 @@ import { OrdersModule } from './modules/orders/orders.module';
     VehiclesModule,
     TripsModule,
     OrdersModule,
+    WalletsModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
