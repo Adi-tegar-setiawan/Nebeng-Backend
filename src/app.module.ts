@@ -11,6 +11,7 @@ import { DriverVerificationsModule } from './modules/verifications/verifications
 import { RegionsModule } from './modules/regions/region.module';
 import { PickupPointsModule } from './modules/pickup-points/pickup-points.module';
 import { VehiclesModule } from './modules/vehicles/vehicles.module';
+import { TripsModule } from './modules/trips/trips.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { VehiclesModule } from './modules/vehicles/vehicles.module';
     RegionsModule,
     PickupPointsModule,
     VehiclesModule,
+    TripsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
