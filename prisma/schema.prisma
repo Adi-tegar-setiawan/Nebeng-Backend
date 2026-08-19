@@ -4,8 +4,8 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
   moduleFormat = "cjs"
 }
 
@@ -126,7 +126,7 @@ enum RewardType {
 
 model Region {
   id        BigInt   @id @default(autoincrement())
-  name      String   // Contoh: Region Yogyakarta, Region Banyumas
+  name      String // Contoh: Region Yogyakarta, Region Banyumas
   code      String   @unique // Contoh: REG-DIY, REG-BMS
   isActive  Boolean  @default(true) @map("is_active")
   createdAt DateTime @default(now()) @map("created_at")
@@ -172,20 +172,21 @@ model User {
   createdAt          DateTime           @default(now()) @map("created_at")
   updatedAt          DateTime           @updatedAt @map("updated_at")
 
-  profile              UserProfile?
-  wallet               Wallet?
-  assignedPickupPoints PickupPoint[]        @relation("OperatorAssigned")
-  verifications        Verification[]       @relation("UserVerifications")
-  approvedVerifications Verification[]      @relation("AdminApprovals")
-  tripsAsMitra         Trip[]               @relation("MitraTrips")
-  ordersAsCustomer     Order[]              @relation("CustomerOrders")
-  checkpointsScanned   CheckpointsLog[]     @relation("OperatorCheckpoints")
-  rewardTransactions   RewardTransaction[]
-  conversationsAsCustomer Conversation[]   @relation("CustomerConversations")
-  conversationsAsMitra    Conversation[]   @relation("MitraConversations")
-  sentMessages         Message[]            @relation("SentMessages")
-  reviewsGiven         TripReview[]         @relation("ReviewsGiven")
-  reviewsReceived      TripReview[]         @relation("ReviewsReceived")
+  profile                 UserProfile?
+  wallet                  Wallet?
+  assignedPickupPoints    PickupPoint[]       @relation("OperatorAssigned")
+  verifications           Verification[]      @relation("UserVerifications")
+  approvedVerifications   Verification[]      @relation("AdminApprovals")
+  tripsAsMitra            Trip[]              @relation("MitraTrips")
+  ordersAsCustomer        Order[]             @relation("CustomerOrders")
+  checkpointsScanned      CheckpointsLog[]    @relation("OperatorCheckpoints")
+  rewardTransactions      RewardTransaction[]
+  conversationsAsCustomer Conversation[]      @relation("CustomerConversations")
+  conversationsAsMitra    Conversation[]      @relation("MitraConversations")
+  sentMessages            Message[]           @relation("SentMessages")
+  reviewsGiven            TripReview[]        @relation("ReviewsGiven")
+  reviewsReceived         TripReview[]        @relation("ReviewsReceived")
+  vehicles                Vehicle[]
 
   @@map("users")
 }
@@ -196,7 +197,7 @@ model UserProfile {
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   ktpNumber         String?  @map("ktp_number")
   fullNameKtp       String?  @map("full_name_ktp")
-  addressKtp        String?  @db.Text @map("address_ktp")
+  addressKtp        String?  @map("address_ktp") @db.Text
   faceImageUrl      String?  @map("face_image_url")
   isFaceVerified    Boolean  @default(false) @map("is_face_verified")
   bankName          String?  @map("bank_name")
@@ -216,7 +217,7 @@ model Verification {
   approvedByUser   User?              @relation("AdminApprovals", fields: [approvedByUserId], references: [id])
   type             VerificationType
   status           VerificationStatus @default(pending)
-  rejectionReason  String?            @db.Text @map("rejection_reason")
+  rejectionReason  String?            @map("rejection_reason") @db.Text
   createdAt        DateTime           @default(now()) @map("created_at")
   updatedAt        DateTime           @updatedAt @map("updated_at")
 
@@ -242,25 +243,25 @@ model VerificationFile {
 // ------------------------------------------------------
 
 model PickupPoint {
-  id          BigInt   @id @default(autoincrement())
-  regionId    BigInt   @map("region_id")
-  region      Region   @relation(fields: [regionId], references: [id])
-  cityId      BigInt   @map("city_id")
-  city        City     @relation(fields: [cityId], references: [id])
-  operatorId  BigInt?  @map("operator_id")
-  operator    User?    @relation("OperatorAssigned", fields: [operatorId], references: [id])
-  name        String
-  address     String   @db.Text
-  latitude    Decimal  @db.Decimal(10, 8)
-  longitude   Decimal  @db.Decimal(11, 8)
-  qrCodePos   String   @unique @map("qr_code_pos")
-  isActive    Boolean  @default(true) @map("is_active")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id         BigInt   @id @default(autoincrement())
+  regionId   BigInt   @map("region_id")
+  region     Region   @relation(fields: [regionId], references: [id])
+  cityId     BigInt   @map("city_id")
+  city       City     @relation(fields: [cityId], references: [id])
+  operatorId BigInt?  @map("operator_id")
+  operator   User?    @relation("OperatorAssigned", fields: [operatorId], references: [id])
+  name       String
+  address    String   @db.Text
+  latitude   Decimal  @db.Decimal(10, 8)
+  longitude  Decimal  @db.Decimal(11, 8)
+  qrCodePos  String   @unique @map("qr_code_pos")
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
-  originTrips      Trip[]           @relation("OriginPickupPoint")
-  destTrips        Trip[]           @relation("DestPickupPoint")
-  checkpointsLogs  CheckpointsLog[]
+  originTrips     Trip[]           @relation("OriginPickupPoint")
+  destTrips       Trip[]           @relation("DestPickupPoint")
+  checkpointsLogs CheckpointsLog[]
 
   @@map("pickup_points")
 }
@@ -286,13 +287,15 @@ model Trip {
   id                        BigInt      @id @default(autoincrement())
   mitraId                   BigInt      @map("mitra_id")
   mitra                     User        @relation("MitraTrips", fields: [mitraId], references: [id])
+  vehicleId                 BigInt      @map("vehicle_id")
+  vehicle                   Vehicle     @relation(fields: [vehicleId], references: [id])
   originPointId             BigInt      @map("origin_point_id")
   originPoint               PickupPoint @relation("OriginPickupPoint", fields: [originPointId], references: [id])
   destinationPointId        BigInt      @map("destination_point_id")
   destinationPoint          PickupPoint @relation("DestPickupPoint", fields: [destinationPointId], references: [id])
   vehicleType               VehicleType @map("vehicle_type")
-  departureDate             DateTime    @db.Date @map("departure_date")
-  departureTime             DateTime    @db.Time @map("departure_time")
+  departureDate             DateTime    @map("departure_date") @db.Date
+  departureTime             DateTime    @map("departure_time") @db.Time
   price                     Decimal     @db.Decimal(10, 2)
   seatTotal                 Int         @map("seat_total")
   seatAvailable             Int         @map("seat_available")
@@ -300,38 +303,38 @@ model Trip {
   remainingWeightCapacityKg Decimal     @map("remaining_weight_capacity_kg") @db.Decimal(8, 2)
   qrCodeTrip                String      @unique @map("qr_code_trip")
   status                    TripStatus  @default(scheduled)
-  mapsPolyline              String?     @db.Text @map("maps_polyline")
+  mapsPolyline              String?     @map("maps_polyline") @db.Text
   createdAt                 DateTime    @default(now()) @map("created_at")
   updatedAt                 DateTime    @updatedAt @map("updated_at")
 
-  orders           Order[]
-  checkpointsLogs  CheckpointsLog[]
-  qrSessions       TripQrSession[]
-  trackings        TripTracking[]
-  conversations    Conversation[]
-  reviews          TripReview[]
+  orders          Order[]
+  checkpointsLogs CheckpointsLog[]
+  qrSessions      TripQrSession[]
+  trackings       TripTracking[]
+  conversations   Conversation[]
+  reviews         TripReview[]
 
   @@map("trips")
 }
 
 model Order {
-  id               BigInt       @id @default(autoincrement())
-  tripId           BigInt       @map("trip_id")
-  trip             Trip         @relation(fields: [tripId], references: [id])
-  customerId       BigInt       @map("customer_id")
-  customer         User         @relation("CustomerOrders", fields: [customerId], references: [id])
-  type             OrderType
-  seatsBooked      Int          @default(0) @map("seats_booked")
-  totalItemsCount  Int          @default(0) @map("total_items_count")
-  totalWeightKg    Decimal      @default(0) @map("total_weight_kg") @db.Decimal(8, 2)
-  totalPrice       Decimal      @map("total_price") @db.Decimal(10, 2)
-  qrCodeTicket     String       @unique @map("qr_code_ticket")
-  otpClaim         String?      @map("otp_claim")
-  readinessStatus  String?      @map("readiness_status")
-  status           OrderStatus  @default(pending_payment)
-  escrowStatus     EscrowStatus @default(pending) @map("escrow_status")
-  createdAt        DateTime     @default(now()) @map("created_at")
-  updatedAt        DateTime     @updatedAt @map("updated_at")
+  id              BigInt       @id @default(autoincrement())
+  tripId          BigInt       @map("trip_id")
+  trip            Trip         @relation(fields: [tripId], references: [id])
+  customerId      BigInt       @map("customer_id")
+  customer        User         @relation("CustomerOrders", fields: [customerId], references: [id])
+  type            OrderType
+  seatsBooked     Int          @default(0) @map("seats_booked")
+  totalItemsCount Int          @default(0) @map("total_items_count")
+  totalWeightKg   Decimal      @default(0) @map("total_weight_kg") @db.Decimal(8, 2)
+  totalPrice      Decimal      @map("total_price") @db.Decimal(10, 2)
+  qrCodeTicket    String       @unique @map("qr_code_ticket")
+  otpClaim        String?      @map("otp_claim")
+  readinessStatus String?      @map("readiness_status")
+  status          OrderStatus  @default(pending_payment)
+  escrowStatus    EscrowStatus @default(pending) @map("escrow_status")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
 
   itemOrders         ItemOrder[]
   checkpointsLogs    CheckpointsLog[]
@@ -367,17 +370,17 @@ model ItemOrder {
 // ------------------------------------------------------
 
 model CheckpointsLog {
-  id             BigInt      @id @default(autoincrement())
-  tripId         BigInt      @map("trip_id")
-  trip           Trip        @relation(fields: [tripId], references: [id])
-  orderId        BigInt      @map("order_id")
-  order          Order       @relation(fields: [orderId], references: [id])
-  posId          BigInt      @map("pos_id")
-  pos            PickupPoint @relation(fields: [posId], references: [id])
-  scannedByUserId BigInt     @map("scanned_by_user_id")
-  scannedByUser  User        @relation("OperatorCheckpoints", fields: [scannedByUserId], references: [id])
-  scanType       ScanType    @map("scan_type")
-  createdAt      DateTime    @default(now()) @map("created_at")
+  id              BigInt      @id @default(autoincrement())
+  tripId          BigInt      @map("trip_id")
+  trip            Trip        @relation(fields: [tripId], references: [id])
+  orderId         BigInt      @map("order_id")
+  order           Order       @relation(fields: [orderId], references: [id])
+  posId           BigInt      @map("pos_id")
+  pos             PickupPoint @relation(fields: [posId], references: [id])
+  scannedByUserId BigInt      @map("scanned_by_user_id")
+  scannedByUser   User        @relation("OperatorCheckpoints", fields: [scannedByUserId], references: [id])
+  scanType        ScanType    @map("scan_type")
+  createdAt       DateTime    @default(now()) @map("created_at")
 
   @@map("checkpoints_log")
 }
@@ -503,7 +506,7 @@ model Message {
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   senderId       BigInt       @map("sender_id")
   sender         User         @relation("SentMessages", fields: [senderId], references: [id])
-  messageText    String       @db.Text @map("message_text")
+  messageText    String       @map("message_text") @db.Text
   readAt         DateTime?    @map("read_at")
   createdAt      DateTime     @default(now()) @map("created_at")
 
@@ -523,4 +526,22 @@ model TripReview {
   createdAt  DateTime @default(now()) @map("created_at")
 
   @@map("trip_reviews")
+}
+
+model Vehicle {
+  id                  BigInt      @id @default(autoincrement())
+  userId              BigInt      @map("user_id")
+  user                User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type                VehicleType
+  model               String
+  plateNumber         String      @unique @map("plate_number")
+  color               String
+  capacitySeats       Int         @map("capacity_seats")
+  maxWeightCapacityKg Decimal     @map("max_weight_capacity_kg") @db.Decimal(8, 2)
+  createdAt           DateTime    @default(now()) @map("created_at")
+  updatedAt           DateTime    @updatedAt @map("updated_at")
+
+  trips Trip[]
+
+  @@map("vehicles")
 }

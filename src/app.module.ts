@@ -9,6 +9,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/users/users.module';
 import { DriverVerificationsModule } from './modules/verifications/verifications.module';
 import { RegionsModule } from './modules/regions/region.module';
+import { PickupPointsModule } from './modules/pickup-points/pickup-points.module';
+import { VehiclesModule } from './modules/vehicles/vehicles.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { RegionsModule } from './modules/regions/region.module';
     AuthModule,
     DriverVerificationsModule,
     RegionsModule,
+    PickupPointsModule,
+    VehiclesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

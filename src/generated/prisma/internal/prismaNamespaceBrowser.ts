@@ -72,7 +72,8 @@ export const ModelName = {
   RewardTransaction: 'RewardTransaction',
   Conversation: 'Conversation',
   Message: 'Message',
-  TripReview: 'TripReview'
+  TripReview: 'TripReview',
+  Vehicle: 'Vehicle'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -214,6 +215,7 @@ export type PricingSettingScalarFieldEnum = (typeof PricingSettingScalarFieldEnu
 export const TripScalarFieldEnum = {
   id: 'id',
   mitraId: 'mitraId',
+  vehicleId: 'vehicleId',
   originPointId: 'originPointId',
   destinationPointId: 'destinationPointId',
   vehicleType: 'vehicleType',
@@ -413,6 +415,22 @@ export const TripReviewScalarFieldEnum = {
 export type TripReviewScalarFieldEnum = (typeof TripReviewScalarFieldEnum)[keyof typeof TripReviewScalarFieldEnum]
 
 
+export const VehicleScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  type: 'type',
+  model: 'model',
+  plateNumber: 'plateNumber',
+  color: 'color',
+  capacitySeats: 'capacitySeats',
+  maxWeightCapacityKg: 'maxWeightCapacityKg',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type VehicleScalarFieldEnum = (typeof VehicleScalarFieldEnum)[keyof typeof VehicleScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -573,4 +591,13 @@ export const TripReviewOrderByRelevanceFieldEnum = {
 } as const
 
 export type TripReviewOrderByRelevanceFieldEnum = (typeof TripReviewOrderByRelevanceFieldEnum)[keyof typeof TripReviewOrderByRelevanceFieldEnum]
+
+
+export const VehicleOrderByRelevanceFieldEnum = {
+  model: 'model',
+  plateNumber: 'plateNumber',
+  color: 'color'
+} as const
+
+export type VehicleOrderByRelevanceFieldEnum = (typeof VehicleOrderByRelevanceFieldEnum)[keyof typeof VehicleOrderByRelevanceFieldEnum]
 

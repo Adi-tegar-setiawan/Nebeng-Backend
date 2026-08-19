@@ -127,3 +127,8 @@ export type Message = Prisma.MessageModel
  * 
  */
 export type TripReview = Prisma.TripReviewModel
+/**
+ * Model Vehicle
+ * 
+ */
+export type Vehicle = Prisma.VehicleModel
