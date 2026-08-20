@@ -16,7 +16,7 @@ import { OrdersModule } from './modules/orders/orders.module';
 import { WalletsModule } from './modules/wallets/wallets.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { CheckpointsModule } from './modules/checkpoints/checkpoints.module';
-
+import { ChatModule } from './modules/chat/chat.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -34,6 +34,7 @@ import { CheckpointsModule } from './modules/checkpoints/checkpoints.module';
     WalletsModule,
     PaymentsModule,
     CheckpointsModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],
