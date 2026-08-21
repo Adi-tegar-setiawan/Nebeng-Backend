@@ -17,6 +17,8 @@ import { WalletsModule } from './modules/wallets/wallets.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { CheckpointsModule } from './modules/checkpoints/checkpoints.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { ReviewModule } from './modules/reviews/reviews.module';
+import { RewardsModule } from './modules/rewards/rewards.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -35,6 +37,8 @@ import { ChatModule } from './modules/chat/chat.module';
     PaymentsModule,
     CheckpointsModule,
     ChatModule,
+    ReviewModule,
+    RewardsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
