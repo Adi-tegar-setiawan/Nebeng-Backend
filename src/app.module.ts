@@ -19,6 +19,7 @@ import { CheckpointsModule } from './modules/checkpoints/checkpoints.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { ReviewModule } from './modules/reviews/reviews.module';
 import { RewardsModule } from './modules/rewards/rewards.module';
+import { AdminModule } from './modules/admin/admin.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -39,6 +40,7 @@ import { RewardsModule } from './modules/rewards/rewards.module';
     ChatModule,
     ReviewModule,
     RewardsModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],
