@@ -3,7 +3,7 @@ import {
   Role,
   UserStatus,
   VerificationStatus,
-} from '../../../generated/prisma/client';
+} from '../../../generated/prisma/enums';
 
 export class UserResponseDto {
   @ApiProperty({ example: '1029103840' })
