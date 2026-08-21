@@ -3,6 +3,9 @@ import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(
@@ -13,9 +16,14 @@ async function bootstrap() {
     }),
   );
 
+  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalInterceptors(new AuditLogInterceptor());
+
   const config = new DocumentBuilder()
     .setTitle('Nebeng API')
-    .setDescription('Backend API untuk applikasi Nebeng')
+    .setDescription(
+      'Dokumentasi API Backend Nebeng - Transportasi & logistik Hub-to-Hub',
+    )
     .setVersion('1.0')
     .addBearerAuth()
     .build();
