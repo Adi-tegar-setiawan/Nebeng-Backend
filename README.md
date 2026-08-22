@@ -2,97 +2,106 @@
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+<p align="center">Core Backend Engine untuk Platform Ride-Sharing Antarkota & Logistik Hub-to-Hub Berbasis <a href="http://nestjs.com" target="_blank">NestJS 11</a>, Prisma ORM 7, Escrow System, dan Verification Dual QR Code Checkpoint.</p>
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
+<p align="center">
+  <a href="https://nestjs.com" target="_blank"><img src="https://img.shields.io/badge/framework-NestJS%20v11-red.svg" alt="Framework" /></a>
+  <a href="https://www.prisma.io/" target="_blank"><img src="https://img.shields.io/badge/ORM-Prisma%20v7.9.1-blue.svg" alt="ORM" /></a>
+  <a href="https://swagger.io/" target="_blank"><img src="https://img.shields.io/badge/OpenAPI-Swagger-brightgreen.svg" alt="Swagger UI" /></a>
+  <a href="https://jestjs.io/" target="_blank"><img src="https://img.shields.io/badge/testing-Jest%20100%25-green.svg" alt="Testing" /></a>
 </p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 📌 Description
 
-## Project setup
+**Nebeng Backend** adalah platform transportasi antarkota dan logistik *Hub-to-Hub* berbasis terminal/pos resmi. Platform ini mengutamakan keamanan transaksi tinggi melalui verifikasi identitas dua tingkat, penahanan dana otomatis (**Escrow System**), serta verifikasi ganda berbasis QR Code pada pos asal dan pos tujuan.
 
-```bash
-$ npm install
+### 🌟 Fitur Utama Platform
+* **Transportasi Terencana**: Layanan antar-pos (Hub-to-Hub) dengan tarif transparan dan terukur.
+* **Keamanan Logistik & Physical Inspection**: Form pemeriksaan fisik isi paket bersama pengirim, fitur foto kondisi barang, dan penempelan Stiker Segel QR Unik (*Security Seal*).
+* **Escrow Payment & Wallet System**: Penahanan dana otomatis saat *checkout* pembayaran hingga perjalanan/pengiriman diselesaikan secara valid.
+* **Dual QR Code Scanner & Handover OTP**:
+  * **Scan 1 (Check-In Origin)**: Memindai QR Trip Mitra + QR Tiket/Paket di Pos Asal $\rightarrow$ Status: `IN_TRANSIT`.
+  * **Scan 2 (Check-In Destination)**: Memindai QR Trip Mitra + QR Tiket/Paket + OTP 6-Digit di Pos Tujuan $\rightarrow$ Status: `COMPLETED` & Mentrigger *Escrow Release* ke Wallet Mitra.
+* **Tata Kelola Multi-Tenant & RBAC**: Hak akses berjenjang untuk `superadmin`, `admin_wilayah`, `operator_pos`, `mitra`, dan `customer`.
+
+---
+
+## 🏗️ Technical Architecture & Standards
+
+Sistem mengadopsi pola arsitektur modular yang ketat:
+
+$$\text{Controller} \longrightarrow \text{Service} \longrightarrow \text{Repository} \longrightarrow \text{Prisma ORM} \longrightarrow \text{Database (MySQL)}$$
+
+### Aturan Arsitektur & Keamanan Utama:
+1. **Repository Abstraction**: Controller dilarang memanggil `PrismaService` secara langsung.
+2. **Data Mapper & BigInt Handling**: Kunci utama/asing bertipe `BigInt` dikonversi dengan aman menjadi `string` pada layer Data Mapper/DTO untuk mencegah error serialisasi JSON.
+3. **Escrow & Financial Safety**: Seluruh perhitungan tarif dan pencairan dana wajib diproses di *server-side* dan dibungkus dalam Prisma Atomic Transaction (`prisma.$transaction`).
+4. **Data Isolation**: Password, hash PIN, dan refresh token di-hash (`bcrypt`) dan dilarang ditampilkan pada response API.
+
+---
+
+## 📊 Modules & Progress Status
+
+| Modul | Status | Deskripsi Ringkas |
+| :--- | :---: | :--- |
+| **0. Foundation** | ✅ COMPLETE | NestJS 11, Prisma 7, MySQL, Swagger UI, Global ValidationPipe. |
+| **1. Auth & Users** | ✅ COMPLETE | Register, Login, JWT Strategy, Refresh Token Rotation, RBAC, PIN 2FA. |
+| **2. Verification Center** | ✅ COMPLETE | Upload KTP/SIM/SKCK/STNK, Antrean Admin Wilayah, Approval/Rejection. |
+| **3. Region & Pickup Points** | ✅ COMPLETE | Management Wilayah, Kota, Pos Checkpoint, Latitude/Longitude & QR Pos. |
+| **4. Mitra & Vehicles** | ✅ COMPLETE | Registrasi Kendaraan (Motor/Mobil), Aturan Kunci Kapasitas, Schedule Trip. |
+| **5. Booking Engine** | ✅ COMPLETE | Order Penumpang & Parcel, Kalkulasi Bobot, Generate OTP Klaim 6-Digit. |
+| **6. Payments & Wallet** | ✅ COMPLETE | Checkout Payment Simulation, Ledger Transaction, *Escrow Hold Balance*. |
+| **7. Checkpoints & QR** | ✅ COMPLETE | Dual QR Check-in (Origin/Destination), Handover OTP, *Escrow Release*. |
+| **8. In-App Chat** | ✅ COMPLETE | Percakapan Customer-Mitra, Auto-Lock Conversation pada Trip Selesai/Batal. |
+| **9. Reviews & Rewards** | ✅ COMPLETE | Rating & Ulasan Trip, Penambahan & Penukaran Poin Reward Customer. |
+| **10. Quality Assurance** | ✅ COMPLETE | Unit Testing (Services & Controllers) + Full Lifecycle E2E Integration Test. |
+
+---
+
+## ⚙️ Environment Setup
+
+Buat file `.env` pada root direktori backend:
+
+```env
+PORT=3000
+DATABASE_URL="mysql://root:password@localhost:3306/nebeng"
+
+JWT_SECRET="super-secret-jwt-key"
+JWT_REFRESH_SECRET="super-secret-refresh-key"
+JWT_EXPIRES_IN="15m"
+JWT_REFRESH_EXPIRES_IN="7d"
 ```
 
-## Compile and run the project
+## Install Dependensi & Persiapan Database
+# Install package dependencies
+npm install
 
-```bash
-# development
-$ npm run start
+# Validasi dan Jalankan Migrasi Prisma
+npx prisma validate
+npx prisma migrate dev
+npx prisma generate
 
-# watch mode
-$ npm run start:dev
+# Jalankan seluruh Unit Test
+npm run test
 
-# production mode
-$ npm run start:prod
-```
+# Jalankan Unit Test modul spesifik
+npx jest src/modules/orders/
+npx jest src/modules/checkpoints/
 
-## Run tests
+# Jalankan Full Lifecycle Integration E2E Test
+npm run test:e2e
 
-```bash
-# unit tests
-$ npm run test
+# Check Test Coverage
+npm run test:cov
 
-# e2e tests
-$ npm run test:e2e
+# Development Mode
+npm run start
 
-# test coverage
-$ npm run test:cov
-```
+# Watch Mode (Auto Recompile)
+npm run start:dev
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+# Production Build & Run
+npm run build
+npm run start:prod

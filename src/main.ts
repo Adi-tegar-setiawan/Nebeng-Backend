@@ -8,6 +8,11 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Enable CORS untuk kemudahan integrasi dengan tim Frontend
+  app.enableCors();
+
+  // Global Validation Pipe
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -16,22 +21,46 @@ async function bootstrap() {
     }),
   );
 
+  // Global Filter & Interceptor
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalInterceptors(new AuditLogInterceptor());
 
+  // Swagger OpenAPI Specification Configuration
   const config = new DocumentBuilder()
-    .setTitle('Nebeng API')
+    .setTitle('Nebeng App API Specification')
     .setDescription(
-      'Dokumentasi API Backend Nebeng - Transportasi & logistik Hub-to-Hub',
+      'Dokumentasi API Backend Platform Nebeng Transportasi & Pengiriman Paket (Escrow Wallet & Dual QR Checkpoint)',
     )
-    .setVersion('1.0')
-    .addBearerAuth()
+    .setVersion('1.0.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'Authorization',
+        description: 'Masukkan JWT Access Token di sini',
+        in: 'header',
+      },
+      'JWT-auth',
+    )
+    .addTag('Auth', 'Autentikasi, Profil User, Verifikasi KTP & Refresh Token')
+    .addTag('Orders', 'Pemesanan Tiket Penumpang & Pengiriman Paket (Parcel)')
+    .addTag('Payments', 'Gateway Pembayaran & Escrow Balance Hold')
+    .addTag('Checkpoints', 'Verifikasi Dual QR Check-in Pos Asal & Pos Tujuan')
+    .addTag('Wallets', 'Ledger Mutasi Saldo & Pencairan Dana Escrow')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
 
-  SwaggerModule.setup('docs', app, document);
+  SwaggerModule.setup('docs', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true, // Menyimpan Token JWT di browser meski halaman di-refresh
+    },
+    customSiteTitle: 'Nebeng API Documentation',
+  });
 
-  await app.listen(process.env.PORT ?? 3000);
+  const port = process.env.PORT ?? 3000;
+  await app.listen(port);
+  console.log(`Aplikasi berjalan di: http://localhost:${port}/docs`);
 }
 bootstrap();
